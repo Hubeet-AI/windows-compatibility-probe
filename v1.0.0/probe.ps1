@@ -12,7 +12,7 @@ Write-Host ""
 
 try {
     # ----------------------------------------------------
-    # 0. Determinar ubicación del reporte (Fool-proof Desktop)
+    # 0. Determinar ubicacion del reporte (Fool-proof Desktop)
     # ----------------------------------------------------
     $DesktopPath = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Desktop)
 
@@ -45,7 +45,7 @@ try {
         try {
             Remove-Item $Work -Recurse -Force -ErrorAction Stop
         } catch {
-            # Si algún archivo previo quedó bloqueado por procesos anteriores
+            # Si algun archivo previo quedo bloqueado por procesos anteriores
             $Work = Join-Path $env:TEMP ("hubeet-windows-probe-" + [Guid]::NewGuid().ToString().Substring(0, 8))
         }
     }
@@ -103,7 +103,7 @@ try {
     }
 
     if (-not $uvBin -or -not (Test-Path $uvBin)) {
-        throw "No se pudo localizar el ejecutable de uv tras la instalación."
+        throw "No se pudo localizar el ejecutable de uv tras la instalacion."
     }
 
     Write-Host "      uv listo: $uvBin" -ForegroundColor Green
@@ -122,7 +122,7 @@ try {
 
     $agentDir = Get-ChildItem -Path $Work -Directory | Where-Object { $_.Name -like "jev-windows-agent*" } | Select-Object -First 1
     if (-not $agentDir) {
-        throw "No se encontró el directorio extraído de jev-windows-agent."
+        throw "No se encontro el directorio extraido de jev-windows-agent."
     }
     Set-Location $agentDir.FullName
 
@@ -138,7 +138,7 @@ try {
 
     $pythonExe = Join-Path (Get-Location) ".venv\Scripts\python.exe"
     if (-not (Test-Path $pythonExe)) {
-        throw "No se encontró el intérprete de Python en: $pythonExe"
+        throw "No se encontro el interprete de Python en: $pythonExe"
     }
 
     & $uvBin pip install --python $pythonExe -e ".[windows]"
@@ -148,11 +148,11 @@ try {
 
     $probeScript = Join-Path (Get-Location) "examples\windows_uia_probe.py"
     if (-not (Test-Path $probeScript)) {
-        throw "No se encontró el script de prueba en: $probeScript"
+        throw "No se encontro el script de prueba en: $probeScript"
     }
 
     # ----------------------------------------------------
-    # 5. Cuenta regresiva y ejecución de la prueba
+    # 5. Cuenta regresiva y ejecucion de la prueba
     # ----------------------------------------------------
     Write-Host ""
     Write-Host "================================================" -ForegroundColor Magenta
@@ -165,7 +165,7 @@ try {
         Write-Host -NoNewline "`rEsperando... $i segundos restantes "
         Start-Sleep -Seconds 1
     }
-    Write-Host "`rIniciando análisis...                     " -ForegroundColor Green
+    Write-Host "`rIniciando analisis...                     " -ForegroundColor Green
 
     Write-Host "[4/4] Analizando interfaz y generando reporte..." -ForegroundColor Yellow
 
@@ -184,7 +184,7 @@ try {
     # Abrir el explorador de Windows seleccionando el archivo generado
     try {
         if (Test-Path $ReportPath) {
-            Start-Process explorer.exe -ArgumentList ('/select,"' + $ReportPath + '"')
+            & explorer.exe /select,$ReportPath
         }
     } catch {
         # Silenciar si el entorno no permite abrir Explorer
@@ -193,7 +193,7 @@ try {
 } catch {
     Write-Host ""
     Write-Host "==========================================" -ForegroundColor Red
-    Write-Host "             OCURRIÓ UN ERROR             " -ForegroundColor Red
+    Write-Host "             OCURRIO UN ERROR             " -ForegroundColor Red
     Write-Host "==========================================" -ForegroundColor Red
     Write-Host ""
     Write-Host "Detalle del error:" -ForegroundColor Red
