@@ -57,8 +57,12 @@ try {
     # ----------------------------------------------------
     Write-Host "[1/4] Preparando entorno Python (uv)..." -ForegroundColor Yellow
 
-    # Buscar uv si ya está disponible en PATH o rutas conocidas
-    $uvBin = (Get-Command uv -ErrorAction SilentlyContinue)?.Source
+    $uvBin = $null
+    $existingUv = Get-Command uv -ErrorAction SilentlyContinue
+    if ($existingUv) {
+        $uvBin = $existingUv.Source
+    }
+
     if (-not $uvBin) {
         $possibleUv = @(
             "$env:USERPROFILE\.local\bin\uv.exe",
@@ -78,16 +82,17 @@ try {
     if (-not $uvBin) {
         Write-Host "      Descargando e instalando uv..." -ForegroundColor Gray
         try {
-            powershell.exe -NoProfile -ExecutionPolicy Bypass -Command `
-              "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; irm https://astral.sh/uv/install.ps1 | iex"
+            powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; irm https://astral.sh/uv/install.ps1 | iex"
         } catch {
             throw "Error al instalar uv: $($_.Exception.Message)"
         }
 
         # Actualizar PATH del proceso actual y rebuscar
         $env:Path = "$env:USERPROFILE\.local\bin;$env:Path"
-        $uvBin = (Get-Command uv -ErrorAction SilentlyContinue)?.Source
-        if (-not $uvBin) {
+        $newUv = Get-Command uv -ErrorAction SilentlyContinue
+        if ($newUv) {
+            $uvBin = $newUv.Source
+        } else {
             foreach ($p in $possibleUv) {
                 if (Test-Path $p) {
                     $uvBin = $p
@@ -179,7 +184,7 @@ try {
     # Abrir el explorador de Windows seleccionando el archivo generado
     try {
         if (Test-Path $ReportPath) {
-            Start-Process explorer.exe -ArgumentList "/select,`"$ReportPath`""
+            Start-Process explorer.exe -ArgumentList ('/select,"' + $ReportPath + '"')
         }
     } catch {
         # Silenciar si el entorno no permite abrir Explorer
@@ -193,8 +198,6 @@ try {
     Write-Host ""
     Write-Host "Detalle del error:" -ForegroundColor Red
     Write-Host $_.Exception.Message -ForegroundColor Yellow
-    Write-Host ""
-    Write-Host "Ruta de trabajo donde ocurrió: $(Get-Location)" -ForegroundColor Gray
     Write-Host ""
 } finally {
     Write-Host ""
